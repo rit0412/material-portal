@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Portal - Download Study Materials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-box select {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .search-box button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5a67d8;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .material-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .material-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .material-card .category {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .material-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .material-card .description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .material-card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .material-card .download-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #48bb78;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .material-card .download-btn:hover {
+            background: #38a169;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 50px;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 50px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-box input,
+            .search-box select,
+            .search-box button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Material Portal</h1>
+            <p>Download study materials and resources</p>
+        </header>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search materials...">
+                <select id="categorySelect">
+                    <option value="all">All Categories</option>
+                </select>
+                <button onclick="searchMaterials()">Search</button>
+            </div>
+        </div>
+
+        <div id="materialsContainer" class="materials-grid">
+            <div class="loading">Loading materials...</div>
+        </div>
+
+        <footer>
+            <p>Material Portal © 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Load materials on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMaterials();
+            loadCategories();
+            
+            // Search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchMaterials();
+            });
+        });
+
+        // Load all materials
+        async function loadMaterials() {
+            try {
+                const response = await fetch(`${API_URL}/api/materials`);
+                const materials = await response.json();
+                displayMaterials(materials);
+            } catch (error) {
+                showError('Failed to load materials. Please try again later.');
+            }
+        }
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_URL}/api/categories`);
+                const categories = await response.json();
+                const select = document.getElementById('categorySelect');
+                
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        // Search materials
+        async function searchMaterials() {
+            const search = document.getElementById('searchInput').value;
+            const category = document.getElementById('categorySelect').value;
+            
+            try {
+                const container = document.getElementById('materialsContainer');
+                container.innerHTML = '<div class="loading">Searching...</div>';
+                
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (category !== 'all') params.append('category', category);
+                
+                const response = await fetch(`${API_URL}/api/materials?${params}`);
+                const materials = await response.json();
+                displayMaterials(materials);
+            } catch (error) {
+                showError('Failed to search materials. Please try again.');
+            }
+        }
+
+        // Display materials
+        function displayMaterials(materials) {
+            const container = document.getElementById('materialsContainer');
+            
+            if (materials.length === 0) {
+                container.innerHTML = '<div class="no-results">No materials found.</div>';
+                return;
+            }
+            
+            container.innerHTML = materials.map(material => `
+                <div class="material-card">
+                    <span class="category">${material.category || 'Uncategorized'}</span>
+                    <h3>${escapeHtml(material.title)}</h3>
+                    <p class="description">${escapeHtml(material.description || 'No description available')}</p>
+                    <div class="meta">
+                        <span>📥 ${material.downloadCount} downloads</span>
+                        <span>${formatFileSize(material.fileSize)}</span>
+                    </div>
+                    <a href="${API_URL}/api/download/${material.id}" class="download-btn" download>
+                        Download PDF
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // Show error message
+        function showError(message) {
+            const container = document.getElementById('materialsContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
